@@ -14,10 +14,10 @@ pipeline {
             withCredentials([sshUserPrivateKey(credentialsId: 'sshUser', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
                 remote.user = userName
                 remote.identityFile = identity
-                stage("Placeholder Stage...") {
-                  sshCommand remote: remote, sudo: true, command: 'echo "add your stuff here....."'
-                  sshCommand remote: remote, sudo: true, command: 'echo "some more stuff goes here....."'
-              }
+		stage("Enforce with Ansible") {
+		  sshCommand remote: remote, sudo: true, command: 'cd /root/secops/ansible && git pull origin'
+		  sshCommand remote: remote, sudo: true, command: 'cd /root/secops/ansible && ansible-playbook compliance.yaml'
+		}
                 stage("Scan with InSpec") {
                   sshCommand remote: remote, sudo: true, command: 'inspec exec /root/linux-baseline/'
               }
