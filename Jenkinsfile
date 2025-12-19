@@ -9,17 +9,18 @@ pipeline {
             def remote = [:]
             remote.name = "controlnode"
             remote.host = "172.20.211.155"
+            remote.user = "root"
             remote.allowAnyHosts = true
 
             withCredentials([sshUserPrivateKey(credentialsId: 'sshUser', keyFileVariable: 'identity', passphraseVariable: '', usernameVariable: 'userName')]) {
                 remote.user = userName
                 remote.identityFile = identity
 		stage("Enforce with Ansible") {
-		  sshCommand remote: remote, sudo: true, command: 'cd /root/secops/ansible && git pull origin'
-		  sshCommand remote: remote, sudo: true, command: 'cd /root/secops/ansible && ansible-playbook compliance.yaml'
+		  sshCommand remote: remote, command: 'cd /root/secops/ansible && git pull origin'
+		  sshCommand remote: remote, command: 'cd /root/secops/ansible && ansible-playbook compliance.yaml'
 		}
                 stage("Scan with InSpec") {
-                  sshCommand remote: remote, sudo: true, command: 'inspec exec /root/linux-baseline/'
+                  sshCommand remote: remote, command: 'inspec exec /root/linux-baseline/'
               }
             }
           }
